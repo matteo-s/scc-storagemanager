@@ -1,8 +1,10 @@
 package it.smartcommunitylab.storagemanager.provider.local;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,10 +61,11 @@ public class NullProvider extends Provider {
 	}
 
 	@Override
-	public Resource createResource(String userId, JSONObject properties) {
+	public Resource createResource(String userId, Map<String, Serializable> properties) {
 		Resource res = new Resource();
 		res.setType(TYPE);
 		res.setProvider(ID);
+		res.setPropertiesMap(properties);
 
 		// generate uri
 		String uri = SqlUtil.encodeURI("null", "host:981", "dbase", "USER", "PASS");

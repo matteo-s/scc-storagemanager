@@ -1,6 +1,9 @@
 package it.smartcommunitylab.storagemanager.model;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +16,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -20,11 +24,19 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import it.smartcommunitylab.storagemanager.serializer.ResourceSerializer;
+import it.smartcommunitylab.storagemanager.serializer.ResourceDeserializer;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import static javax.persistence.TemporalType.TIMESTAMP;
 
 @Entity
 @EntityListeners({ AuditingEntityListener.class, ResourceListener.class })
+@JsonSerialize(using = ResourceSerializer.class)
+@JsonDeserialize(using = ResourceDeserializer.class)
 public class Resource {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -146,26 +158,81 @@ public class Resource {
 	}
 
 	@Transient
-	private JSONObject json;
+	@JsonIgnore
+	private Map<String, Serializable> map;
 
-	public JSONObject getPropertiesMap() {
-		if (this.json == null) {
-			json = new JSONObject(properties);
+	@JsonIgnore
+	public Map<String, Serializable> getPropertiesMap() {
+		if (this.map == null) {
+			// read map from properties
+			map = Resource.propertiesFromValue(properties);
 		}
-		return json;
+
+		return map;
 	}
 
-	public void setPropertiesMap(JSONObject json) {
-		this.json = json;
+	public void setPropertiesMap(Map<String, Serializable> map) {
+		this.map = map;
 		sync();
 	}
 
 	@PrePersist
 	@PreUpdate
 	private void sync() {
-		if (json != null) {
+		if (map != null) {
+			// custom build json from map
+			JSONObject json = Resource.jsonFromMap(map);
+			// serialize to string
 			properties = json.toString();
+		} else {
+			properties = "{}";
 		}
 	}
 
+	public static Map<String, Serializable> propertiesFromValue(String value) {
+		// read map from string as json
+		Map<String, Serializable> map = new HashMap<>();
+		JSONObject json = new JSONObject(value);
+		// build map from json
+		for (String key : json.keySet()) {
+			JSONArray arr = json.optJSONArray(key);
+			if (arr != null) {
+				// value is array of String
+				String[] ss = new String[arr.length()];
+				for (int i = 0; i < arr.length(); i++) {
+					String s = arr.optString(i);
+					ss[i] = s;
+				}
+
+				map.put(key, ss);
+			} else {
+				// get as String
+				String s = json.optString(key);
+				map.put(key, s);
+			}
+		}
+
+		return map;
+	}
+
+	public static JSONObject jsonFromMap(Map<String, Serializable> map) {
+		// custom build json from map
+		JSONObject json = new JSONObject();
+		for (String key : map.keySet()) {
+			Serializable value = map.get(key);
+			// support only String or String[]
+			if (value instanceof String) {
+				json.put(key, value);
+			} else if (value instanceof String[]) {
+				JSONArray arr = new JSONArray();
+				for (String s : (String[]) value) {
+					arr.put(s);
+				}
+
+				json.put(key, arr);
+			}
+		}
+
+		return json;
+	}
 }

@@ -17,7 +17,7 @@ public class ResourceEventHandler {
 
 	public void notifyAction(String userId, String type, long id, String action) {
 
-		_log.info("create message for " + type + " with payload " + action + ":" + String.valueOf(id));
+		_log.debug("create message for " + type + " with payload " + action + ":" + String.valueOf(id));
 
 		// create message
 		ResourceEvent event = new ResourceEvent(this, userId, type, id, action);

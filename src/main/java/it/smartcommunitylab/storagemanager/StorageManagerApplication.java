@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import it.smartcommunitylab.storagemanager.model.Resource;
 import it.smartcommunitylab.storagemanager.service.ProviderLocalService;
 import it.smartcommunitylab.storagemanager.service.ResourceLocalService;
-import it.smartcommunitylab.storagemanager.util.SqlUtil;
 
 @SpringBootApplication
 public class StorageManagerApplication {
@@ -30,21 +29,21 @@ public class StorageManagerApplication {
 
 			System.out.println("Ready.");
 
-			service.getProviders().forEach((key, p) -> System.out.println((key + ":" + p.getId())));
-
+//			service.getProviders().forEach((key, p) -> System.out.println((key + ":" + p.getId())));
+//
 			// test
-			Resource res = resourceService.create("mat", "nullProvider", null);
+			Resource res = resourceService.create("mat", SystemKeys.TYPE_SQL, "nullProvider", null);
 			System.out.println("resource " + res.getId() + " uri " + res.getUri());
-
-			// parse
-			String username = SqlUtil.getUsername(res.getUri());
-			System.out.println("resource " + res.getId() + " user " + SqlUtil.getUsername(res.getUri()));
-			System.out.println("resource " + res.getId() + " password " + SqlUtil.getPassword(res.getUri()));
-			System.out.println("resource " + res.getId() + " provider " + SqlUtil.getProvider(res.getUri()));
-			System.out.println("resource " + res.getId() + " endpoint " + SqlUtil.getEndpoint(res.getUri()));
-			System.out.println("resource " + res.getId() + " host " + SqlUtil.getHost(res.getUri()));
-			System.out.println("resource " + res.getId() + " port " + SqlUtil.getPort(res.getUri()));
-			System.out.println("resource " + res.getId() + " database " + SqlUtil.getDatabase(res.getUri()));
+//
+//			// parse
+//			String username = SqlUtil.getUsername(res.getUri());
+//			System.out.println("resource " + res.getId() + " user " + SqlUtil.getUsername(res.getUri()));
+//			System.out.println("resource " + res.getId() + " password " + SqlUtil.getPassword(res.getUri()));
+//			System.out.println("resource " + res.getId() + " provider " + SqlUtil.getProvider(res.getUri()));
+//			System.out.println("resource " + res.getId() + " endpoint " + SqlUtil.getEndpoint(res.getUri()));
+//			System.out.println("resource " + res.getId() + " host " + SqlUtil.getHost(res.getUri()));
+//			System.out.println("resource " + res.getId() + " port " + SqlUtil.getPort(res.getUri()));
+//			System.out.println("resource " + res.getId() + " database " + SqlUtil.getDatabase(res.getUri()));
 
 		};
 	}

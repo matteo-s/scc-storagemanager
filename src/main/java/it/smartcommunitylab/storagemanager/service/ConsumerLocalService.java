@@ -1,9 +1,11 @@
 package it.smartcommunitylab.storagemanager.service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 import it.smartcommunitylab.storagemanager.SystemKeys;
 import it.smartcommunitylab.storagemanager.common.NoSuchConsumerException;
 import it.smartcommunitylab.storagemanager.common.NoSuchProviderException;
+import it.smartcommunitylab.storagemanager.common.NoSuchRegistrationException;
 import it.smartcommunitylab.storagemanager.common.NoSuchResourceException;
 import it.smartcommunitylab.storagemanager.config.ConsumerConfiguration;
 import it.smartcommunitylab.storagemanager.model.Consumer;
@@ -22,7 +25,6 @@ import it.smartcommunitylab.storagemanager.model.ConsumerBuilder;
 import it.smartcommunitylab.storagemanager.model.Registration;
 import it.smartcommunitylab.storagemanager.model.Resource;
 import it.smartcommunitylab.storagemanager.model.ResourceEvent;
-import it.smartcommunitylab.storagemanager.repository.RegistrationRepository;
 
 @Component
 public class ConsumerLocalService {
@@ -34,10 +36,10 @@ public class ConsumerLocalService {
 	private ConsumerConfiguration staticConfig;
 
 	@Autowired
-	private RegistrationRepository registrationRepository;
+	private ResourceLocalService resourceLocalService;
 
 	@Autowired
-	private ResourceLocalService resourceLocalService;
+	private RegistrationLocalService registrationService;
 
 	/*
 	 * Init
@@ -55,52 +57,22 @@ public class ConsumerLocalService {
 
 		// scan static consumers from config
 		// TODO refactor
-		for (String id : staticConfig.getSql()) {
-			// create via builder
-			try {
-				Consumer c = buildConsumer(id);
-				// add to map
-				_consumers.get(SystemKeys.TYPE_SQL).add(c);
-			} catch (NoSuchConsumerException e) {
-				_log.error("no builder for " + id);
-			}
-		}
+		for (String type : _consumers.keySet()) {
 
-		for (String id : staticConfig.getNosql()) {
-			// create via builder
-			try {
-				Consumer c = buildConsumer(id);
-				// add to map
-				_consumers.get(SystemKeys.TYPE_NOSQL).add(c);
-			} catch (NoSuchConsumerException e) {
-				_log.error("no builder for " + id);
-			}
-		}
-
-		for (String id : staticConfig.getFile()) {
-			// create via builder
-			try {
-				Consumer c = buildConsumer(id);
-				// add to map
-				_consumers.get(SystemKeys.TYPE_FILE).add(c);
-			} catch (NoSuchConsumerException e) {
-				_log.error("no builder for " + id);
-			}
-		}
-
-		for (String id : staticConfig.getObject()) {
-			// create via builder
-			try {
-				Consumer c = buildConsumer(id);
-				// add to map
-				_consumers.get(SystemKeys.TYPE_OBJECT).add(c);
-			} catch (NoSuchConsumerException e) {
-				_log.error("no builder for " + id);
+			for (String id : staticConfig.get(type)) {
+				// create via builder
+				try {
+					Consumer c = buildConsumer(id);
+					// add to map
+					_consumers.get(type).add(c);
+				} catch (NoSuchConsumerException e) {
+					_log.error("no builder for " + id);
+				}
 			}
 		}
 
 		// read consumers from DB
-		List<Registration> registrations = registrationRepository.findAll();
+		List<Registration> registrations = registrationService.list();
 		for (Registration reg : registrations) {
 			// build consumer with properties
 			try {
@@ -164,9 +136,62 @@ public class ConsumerLocalService {
 		return _builders.get(builderClass).build(reg);
 	}
 
+	private boolean hasConsumer(String id) {
+		// lookup builder
+		String builderClass = id.replace("Consumer", "Builder");
+
+		return _builders.containsKey(builderClass);
+	}
+
 	/*
 	 * Data
 	 */
+
+	public Registration add(String userId, String type, String consumer, Map<String, Serializable> properties)
+			throws NoSuchConsumerException {
+
+		// check support
+		if (!hasConsumer(consumer)) {
+			throw new NoSuchConsumerException();
+		}
+
+		// build registration
+		Registration reg = registrationService.add(userId, type, consumer, properties);
+
+		// build consumer
+		Consumer c = buildConsumer(reg);
+		_consumers.get(type).add(c);
+
+		return reg;
+	}
+
+	public void delete(long id) throws NoSuchConsumerException {
+		try {
+			// fetch registration
+			Registration reg = registrationService.get(id);
+			String type = reg.getType();
+
+			// lookup for consumer
+			// TODO replace with lookup map?
+			Consumer consumer = null;
+			for (Consumer c : _consumers.get(type)) {
+				if (c.getRegistration() == reg) {
+					consumer = c;
+					break;
+				}
+			}
+
+			if (consumer != null) {
+				// delete consumer - no cleanup or shutdown
+				_consumers.get(type).remove(consumer);
+			}
+
+			// clear registration
+			registrationService.delete(id);
+		} catch (NoSuchRegistrationException nrex) {
+			throw new NoSuchConsumerException();
+		}
+	}
 
 	/*
 	 * Events

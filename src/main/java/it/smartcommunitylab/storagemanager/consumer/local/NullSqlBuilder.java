@@ -1,4 +1,4 @@
-package it.smartcommunitylab.storagemanager.consumer.log;
+package it.smartcommunitylab.storagemanager.consumer.local;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -6,19 +6,16 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-
 import it.smartcommunitylab.storagemanager.common.NoSuchConsumerException;
 import it.smartcommunitylab.storagemanager.model.Consumer;
 import it.smartcommunitylab.storagemanager.model.ConsumerBuilder;
 import it.smartcommunitylab.storagemanager.model.Registration;
 
 @Component
-public class LogNoSqlBuilder implements ConsumerBuilder {
+public class NullSqlBuilder implements ConsumerBuilder {
 
-	@Value("${consumers.log.enable}")
+	@Value("${consumers.null.enable}")
 	private boolean enabled;
-
-	private static LogNoSqlConsumer _instance;
 
 	@Override
 	public Consumer build() throws NoSuchConsumerException {
@@ -26,25 +23,31 @@ public class LogNoSqlBuilder implements ConsumerBuilder {
 			throw new NoSuchConsumerException();
 		}
 
-		// use singleton
-		if (_instance == null) {
-			_instance = new LogNoSqlConsumer();
-			// explicitly call init() since @postconstruct won't work here
-			_instance.init();
+		NullSqlConsumer consumer = new NullSqlConsumer();
+		// explicitly call init() since @postconstruct won't work here
+		consumer.init();
 
-		}
-
-		return _instance;
+		return consumer;
 	}
 
 	@Override
 	public Consumer build(Map<String, Serializable> properties) throws NoSuchConsumerException {
-		return build();
+		// properties supported
+		NullSqlConsumer consumer = new NullSqlConsumer(properties);
+		// explicitly call init() since @postconstruct won't work here
+		consumer.init();
+
+		return consumer;
 	}
 
 	@Override
 	public Consumer build(Registration reg) throws NoSuchConsumerException {
-		return build();
+		// properties supported
+		NullSqlConsumer consumer = new NullSqlConsumer(reg.getPropertiesMap());
+		// explicitly call init() since @postconstruct won't work here
+		consumer.init();
+
+		return consumer;
 	}
 
 }

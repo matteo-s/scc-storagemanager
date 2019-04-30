@@ -3,7 +3,6 @@ package it.smartcommunitylab.storagemanager.consumer.log;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +37,7 @@ public class LogSqlBuilder implements ConsumerBuilder {
 	}
 
 	@Override
-	public Consumer build(JSONObject properties) throws NoSuchConsumerException {
+	public Consumer build(Map<String, Serializable> properties) throws NoSuchConsumerException {
 		return build();
 	}
 

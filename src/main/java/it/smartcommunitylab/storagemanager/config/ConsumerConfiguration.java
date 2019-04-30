@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import it.smartcommunitylab.storagemanager.SystemKeys;
+
 @Component
 @ConfigurationProperties(prefix = "consumers.static")
 public class ConsumerConfiguration {
@@ -45,6 +47,26 @@ public class ConsumerConfiguration {
 
 	public void setObject(List<String> object) {
 		this.object = object;
+	}
+
+	public List<String> get(String type) {
+		List<String> res = null;
+		switch (type) {
+		case SystemKeys.TYPE_SQL:
+			res = getSql();
+			break;
+		case SystemKeys.TYPE_NOSQL:
+			res = getNosql();
+			break;
+		case SystemKeys.TYPE_FILE:
+			res = getFile();
+			break;
+		case SystemKeys.TYPE_OBJECT:
+			res = getObject();
+			break;
+		}
+
+		return res;
 	}
 
 }

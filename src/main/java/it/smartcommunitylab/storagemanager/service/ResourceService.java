@@ -1,7 +1,9 @@
 package it.smartcommunitylab.storagemanager.service;
 
+import java.io.Serializable;
 import java.util.List;
-import org.json.JSONObject;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,18 +28,18 @@ public class ResourceService {
 	/*
 	 * Data
 	 */
-	public Resource create(String userId, String providerId, JSONObject properties)
+	public Resource create(String userId, String type, String providerId, Map<String, Serializable> properties)
 			throws NoSuchProviderException {
 		_log.info("create resource with " + String.valueOf(providerId) + " by user " + userId);
 
 		// TODO check auth
 		//
 		// call local service
-		return resourceLocalService.create(userId, providerId, properties);
+		return resourceLocalService.create(userId, type, providerId, properties);
 
 	}
 
-	public Resource update(String userId, long id, JSONObject properties)
+	public Resource update(String userId, long id, Map<String, Serializable> properties)
 			throws NoSuchResourceException, NoSuchProviderException {
 		_log.info("update resource " + String.valueOf(id) + " by user " + userId);
 

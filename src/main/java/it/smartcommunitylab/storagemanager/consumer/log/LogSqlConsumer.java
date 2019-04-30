@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import it.smartcommunitylab.storagemanager.SystemKeys;
 import it.smartcommunitylab.storagemanager.model.Consumer;
+import it.smartcommunitylab.storagemanager.model.Registration;
 import it.smartcommunitylab.storagemanager.model.Resource;
 
 public class LogSqlConsumer extends Consumer {
@@ -64,5 +65,11 @@ public class LogSqlConsumer extends Consumer {
 	public void checkResource(String userId, Resource resource) {
 		_log.debug("check resource " + resource.toString());
 
+	}
+
+	@Override
+	public Registration getRegistration() {
+		// not supported
+		return null;
 	}
 }

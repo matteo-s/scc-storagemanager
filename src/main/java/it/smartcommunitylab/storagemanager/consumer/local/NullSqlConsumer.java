@@ -1,22 +1,44 @@
-package it.smartcommunitylab.storagemanager.consumer.log;
+package it.smartcommunitylab.storagemanager.consumer.local;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import it.smartcommunitylab.storagemanager.SystemKeys;
 import it.smartcommunitylab.storagemanager.model.Consumer;
 import it.smartcommunitylab.storagemanager.model.Registration;
 import it.smartcommunitylab.storagemanager.model.Resource;
 
-public class LogNoSqlConsumer extends Consumer {
+public class NullSqlConsumer extends Consumer {
 
-	private final static Logger _log = LoggerFactory.getLogger(LogNoSqlConsumer.class);
+	private final static Logger _log = LoggerFactory.getLogger(NullSqlConsumer.class);
 
-	public static final String TYPE = SystemKeys.TYPE_NOSQL;
-	public static final String ID = "logNoSqlConsumer";
+	public static final String TYPE = SystemKeys.TYPE_SQL;
+	public static final String ID = "nullSqlConsumer";
 
 	private int STATUS;
+
+	private Registration registration;
+
+	public NullSqlConsumer() {
+	}
+
+	public NullSqlConsumer(Map<String, Serializable> properties) {
+		_properties = properties;
+	}
+
+	// test properties
+	private Map<String, Serializable> _properties;
+
+	public Map<String, Serializable> getProperties() {
+		return _properties;
+	}
 
 	@Override
 	public String getId() {
@@ -28,6 +50,11 @@ public class LogNoSqlConsumer extends Consumer {
 		return TYPE;
 	}
 
+	@Override
+	public Registration getRegistration() {
+		return registration;
+	}
+
 	/*
 	 * Init method - POST constructor since spring injects properties *after
 	 * creation*
@@ -35,6 +62,11 @@ public class LogNoSqlConsumer extends Consumer {
 	@PostConstruct
 	public void init() {
 		_log.debug("init called");
+
+		if (_properties == null) {
+			_properties = new HashMap<>();
+		}
+
 		STATUS = SystemKeys.STATUS_READY;
 	}
 
@@ -64,13 +96,6 @@ public class LogNoSqlConsumer extends Consumer {
 	@Override
 	public void checkResource(String userId, Resource resource) {
 		_log.debug("check resource " + resource.toString());
-		
-	}
 
-	@Override
-	public Registration getRegistration() {
-		//not supported
-		return null;
 	}
-
 }

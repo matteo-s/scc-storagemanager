@@ -1,5 +1,9 @@
 package it.smartcommunitylab.storagemanager.model;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -8,7 +12,10 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Registration {
@@ -70,26 +77,100 @@ public class Registration {
 		return "Registration [id=" + id + ", type=" + type + ", consumer=" + consumer + ", userId=" + userId + "]";
 	}
 
-	@Transient
-	private JSONObject json;
-
-	public JSONObject getPropertiesMap() {
-		if (this.json == null) {
-			json = new JSONObject(properties);
-		}
-		return json;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		return result;
 	}
 
-	public void setPropertiesMap(JSONObject json) {
-		this.json = json;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Registration other = (Registration) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+
+	@Transient
+	@JsonIgnore
+	private Map<String, Serializable> map;
+
+	public Map<String, Serializable> getPropertiesMap() {
+		if (this.map == null) {
+			// read map from properties
+			map = Resource.propertiesFromValue(properties);
+		}
+		return map;
+	}
+
+	public void setPropertiesMap(Map<String, Serializable> map) {
+		this.map = map;
 		sync();
 	}
 
 	@PrePersist
 	@PreUpdate
 	private void sync() {
-		if (json != null) {
+		if (map != null) {
+			// custom build json from map
+			JSONObject json = jsonFromMap(map);
+			// serialize to string
 			properties = json.toString();
 		}
+	}
+
+	public static Map<String, Serializable> propertiesFromValue(String value) {
+		// read map from string as json
+		Map<String, Serializable> map = new HashMap<>();
+		JSONObject json = new JSONObject(value);
+		// build map from json
+		for (String key : json.keySet()) {
+			JSONArray arr = json.optJSONArray(key);
+			if (arr != null) {
+				// value is array of String
+				String[] ss = new String[arr.length()];
+				for (int i = 0; i < arr.length(); i++) {
+					String s = arr.optString(i);
+					ss[i] = s;
+				}
+
+				map.put(key, ss);
+			} else {
+				// get as String
+				String s = json.optString(key);
+				map.put(key, s);
+			}
+		}
+
+		return map;
+	}
+
+	public static JSONObject jsonFromMap(Map<String, Serializable> map) {
+		// custom build json from map
+		JSONObject json = new JSONObject();
+		for (String key : map.keySet()) {
+			Serializable value = map.get(key);
+			// support only String or String[]
+			if (value instanceof String) {
+				json.put(key, value);
+			} else if (value instanceof String[]) {
+				JSONArray arr = new JSONArray();
+				for (String s : (String[]) value) {
+					arr.put(s);
+				}
+
+				json.put(key, arr);
+			}
+		}
+
+		return json;
 	}
 }

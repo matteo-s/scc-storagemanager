@@ -11,6 +11,8 @@ public abstract class Consumer {
 
 	public abstract int getStatus();
 
+	public abstract Registration getRegistration();
+
 	/*
 	 * Resources
 	 */

@@ -1,9 +1,10 @@
 package it.smartcommunitylab.storagemanager.service;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,13 +34,17 @@ public class ResourceLocalService {
 	/*
 	 * Data
 	 */
-	public Resource create(String userId, String providerId, JSONObject properties)
+	public Resource create(String userId, String type, String providerId, Map<String, Serializable> properties)
 			throws NoSuchProviderException {
-		_log.info("create resource with " + String.valueOf(providerId) + " by user " + userId);
+		_log.info("create " + type + " resource with " + String.valueOf(providerId) + " by user " + userId);
 
 		// call provider to require creation
 		Provider provider = providerLocalService.getProvider(providerId);
-		// sync call
+		// check type match
+		if (!provider.getType().equals(type)) {
+			throw new NoSuchProviderException();
+		}
+		// sync call - should validate properties
 		Resource res = provider.createResource(userId, properties);
 
 		// update fields
@@ -50,7 +55,7 @@ public class ResourceLocalService {
 
 	}
 
-	public Resource update(long id, JSONObject properties)
+	public Resource update(long id, Map<String, Serializable> properties)
 			throws NoSuchResourceException, NoSuchProviderException {
 		_log.info("update resource " + String.valueOf(id));
 
@@ -66,7 +71,7 @@ public class ResourceLocalService {
 
 		// call provider to require update
 		Provider provider = providerLocalService.getProvider(res.getProvider());
-		// sync call
+		// sync call - should validate properties
 		provider.updateResource(res);
 
 		return resourceRepository.save(res);

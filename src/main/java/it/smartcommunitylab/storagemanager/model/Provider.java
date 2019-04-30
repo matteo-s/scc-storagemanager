@@ -1,6 +1,7 @@
 package it.smartcommunitylab.storagemanager.model;
 
-import org.json.JSONObject;
+import java.io.Serializable;
+import java.util.Map;
 
 public abstract class Provider {
 
@@ -16,7 +17,7 @@ public abstract class Provider {
 	/*
 	 * Resources
 	 */
-	public abstract Resource createResource(String userId, JSONObject properties);
+	public abstract Resource createResource(String userId, Map<String, Serializable> properties);
 
 	public abstract void updateResource(Resource resource);
 
