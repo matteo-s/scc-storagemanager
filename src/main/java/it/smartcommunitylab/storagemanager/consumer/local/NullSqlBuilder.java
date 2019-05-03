@@ -18,6 +18,21 @@ public class NullSqlBuilder implements ConsumerBuilder {
 	private boolean enabled;
 
 	@Override
+	public String getType() {
+		return NullSqlConsumer.TYPE;
+	}
+
+	@Override
+	public String getId() {
+		return NullSqlConsumer.ID;
+	}
+
+	@Override
+	public boolean isAvailable() {
+		return enabled;
+	}
+
+	@Override
 	public Consumer build() throws NoSuchConsumerException {
 		if (!enabled) {
 			throw new NoSuchConsumerException();

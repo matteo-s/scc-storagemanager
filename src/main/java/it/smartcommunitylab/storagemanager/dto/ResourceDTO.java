@@ -18,11 +18,13 @@ public class ResourceDTO {
 	public String uri;
 
 	public String userId;
+	public String scopeId;
 	public String properties;
 
 	public ResourceDTO() {
 		id = 0;
 		userId = "";
+		scopeId = "";
 
 		type = "";
 		provider = "";
@@ -79,10 +81,17 @@ public class ResourceDTO {
 		this.properties = properties;
 	}
 
+	@Override
+	public String toString() {
+		return "ResourceDTO [id=" + id + ", type=" + type + ", provider=" + provider + ", uri=" + uri + ", userId="
+				+ userId + ", scopeId=" + scopeId + ", properties=" + properties + "]";
+	}
+
 	public static ResourceDTO fromResource(Resource res) {
 		ResourceDTO dto = new ResourceDTO();
 		dto.id = res.getId();
 		dto.userId = res.getUserId();
+		dto.scopeId = res.getScopeId();
 
 		dto.type = res.getType();
 		dto.provider = res.getProvider();

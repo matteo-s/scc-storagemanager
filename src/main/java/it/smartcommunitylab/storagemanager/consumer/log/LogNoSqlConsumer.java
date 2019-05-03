@@ -44,32 +44,32 @@ public class LogNoSqlConsumer extends Consumer {
 	}
 
 	@Override
-	public void addResource(String userId, Resource resource) {
+	public void addResource(String scopeId, String userId, Resource resource) {
 		_log.debug("add resource " + resource.toString());
 
 	}
 
 	@Override
-	public void updateResource(String userId, Resource resource) {
+	public void updateResource(String scopeId, String userId, Resource resource) {
 		_log.debug("update resource " + resource.toString());
 
 	}
 
 	@Override
-	public void deleteResource(String userId, Resource resource) {
+	public void deleteResource(String scopeId, String userId, Resource resource) {
 		_log.debug("delete resource " + resource.toString());
 
 	}
 
 	@Override
-	public void checkResource(String userId, Resource resource) {
+	public void checkResource(String scopeId, String userId, Resource resource) {
 		_log.debug("check resource " + resource.toString());
-		
+
 	}
 
 	@Override
 	public Registration getRegistration() {
-		//not supported
+		// not supported
 		return null;
 	}
 

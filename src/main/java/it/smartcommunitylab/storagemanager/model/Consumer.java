@@ -16,12 +16,12 @@ public abstract class Consumer {
 	/*
 	 * Resources
 	 */
-	public abstract void addResource(String userId, Resource resource);
+	public abstract void addResource(String scopeId, String userId, Resource resource);
 
-	public abstract void checkResource(String userId, Resource resource);
+	public abstract void checkResource(String scopeId, String userId, Resource resource);
 
-	public abstract void updateResource(String userId, Resource resource);
+	public abstract void updateResource(String scopeId, String userId, Resource resource);
 
-	public abstract void deleteResource(String userId, Resource resource);
+	public abstract void deleteResource(String scopeId, String userId, Resource resource);
 
 }

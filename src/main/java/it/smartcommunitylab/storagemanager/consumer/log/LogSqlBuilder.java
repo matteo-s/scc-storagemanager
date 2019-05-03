@@ -20,6 +20,21 @@ public class LogSqlBuilder implements ConsumerBuilder {
 	private static LogSqlConsumer _instance;
 
 	@Override
+	public String getType() {
+		return LogSqlConsumer.TYPE;
+	}
+
+	@Override
+	public String getId() {
+		return LogSqlConsumer.ID;
+	}
+
+	@Override
+	public boolean isAvailable() {
+		return enabled;
+	}
+
+	@Override
 	public Consumer build() throws NoSuchConsumerException {
 		if (!enabled) {
 			throw new NoSuchConsumerException();

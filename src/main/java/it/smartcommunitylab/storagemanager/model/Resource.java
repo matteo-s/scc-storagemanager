@@ -47,6 +47,8 @@ public class Resource {
 	private String uri;
 
 	private String userId;
+	// example scope=tenant/project/user
+	private String scopeId;
 	private String properties;
 
 	/*
@@ -110,6 +112,14 @@ public class Resource {
 		this.userId = userId;
 	}
 
+	public String getScopeId() {
+		return scopeId;
+	}
+
+	public void setScopeId(String scopeId) {
+		this.scopeId = scopeId;
+	}
+
 	public String getProperties() {
 		return properties;
 	}
@@ -152,9 +162,9 @@ public class Resource {
 
 	@Override
 	public String toString() {
-		return "Resource [id=" + id + ", type=" + type + ", provider=" + provider + ", userId=" + userId
-				+ ", createdDate=" + createdDate + ", modifiedDate=" + modifiedDate + ", createdBy=" + createdBy
-				+ ", lastModifiedBy=" + lastModifiedBy + "]";
+		return "Resource [id=" + id + ", type=" + type + ", provider=" + provider + ", uri=" + uri + ", userId="
+				+ userId + ", scopeId=" + scopeId + ", createdDate=" + createdDate + ", modifiedDate=" + modifiedDate
+				+ ", createdBy=" + createdBy + ", lastModifiedBy=" + lastModifiedBy + "]";
 	}
 
 	@Transient

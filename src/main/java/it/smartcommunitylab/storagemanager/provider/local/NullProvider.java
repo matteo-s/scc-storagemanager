@@ -1,7 +1,10 @@
 package it.smartcommunitylab.storagemanager.provider.local;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -28,6 +31,9 @@ public class NullProvider extends Provider {
 	@Value("${providers.null.enable}")
 	private boolean enabled;
 
+	@Value("${providers.null.properties}")
+	private List<String> properties;
+
 	@Override
 	public String getId() {
 		return ID;
@@ -36,6 +42,11 @@ public class NullProvider extends Provider {
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	@Override
+	public Set<String> listProperties() {
+		return new HashSet<String>(properties);
 	}
 
 	/*
@@ -61,7 +72,7 @@ public class NullProvider extends Provider {
 	}
 
 	@Override
-	public Resource createResource(String userId, Map<String, Serializable> properties) {
+	public Resource createResource(String scopeId, String userId, Map<String, Serializable> properties) {
 		Resource res = new Resource();
 		res.setType(TYPE);
 		res.setProvider(ID);

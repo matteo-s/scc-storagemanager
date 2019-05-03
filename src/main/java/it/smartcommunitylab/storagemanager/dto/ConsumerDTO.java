@@ -13,6 +13,7 @@ public class ConsumerDTO {
 
 	public long id;
 	public String userId;
+	public String scopeId;
 
 	public String type;
 	public String consumer;
@@ -67,6 +68,12 @@ public class ConsumerDTO {
 
 	public void setProperties(String properties) {
 		this.properties = properties;
+	}
+
+	@Override
+	public String toString() {
+		return "ConsumerDTO [id=" + id + ", userId=" + userId + ", type=" + type + ", consumer=" + consumer
+				+ ", properties=" + properties + "]";
 	}
 
 	public static ConsumerDTO fromRegistration(Registration reg) {

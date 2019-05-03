@@ -2,8 +2,10 @@ package it.smartcommunitylab.storagemanager.controller;
 
 import java.io.Serializable;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,19 +22,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
 import it.smartcommunitylab.storagemanager.common.NoSuchConsumerException;
+import it.smartcommunitylab.storagemanager.dto.BuilderDTO;
 import it.smartcommunitylab.storagemanager.dto.ConsumerDTO;
 import it.smartcommunitylab.storagemanager.model.Registration;
 import it.smartcommunitylab.storagemanager.model.Resource;
 import it.smartcommunitylab.storagemanager.service.ConsumerService;
+import it.smartcommunitylab.storagemanager.util.ControllerUtil;
 
 @RestController
-@RequestMapping("/consumers")
 public class ConsumerController {
 
 	private final static Logger _log = LoggerFactory.getLogger(ConsumerController.class);
@@ -43,48 +45,52 @@ public class ConsumerController {
 	/*
 	 * Resource
 	 */
-	@GetMapping("/{id}")
+	@GetMapping({ "/consumers/{id}", "/c/{scope}/consumers/{id}" })
 	@ResponseBody
 	public ConsumerDTO get(
 			@PathVariable("id") long id,
 			HttpServletRequest request, HttpServletResponse response)
 			throws NoSuchConsumerException {
 
-		String userId = getUserId(request);
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
 
-		_log.debug("get " + String.valueOf("id") + " by " + userId);
+		_log.debug("get " + String.valueOf(id) + " by " + userId);
 
-		Registration reg = consumerService.get(userId, id);
+		Registration reg = consumerService.get(scopeId, userId, id);
 
 		return ConsumerDTO.fromRegistration(reg);
 	}
 
-	@PostMapping("/")
+	@PostMapping({ "/consumers", "/c/{scope}/consumers" })
 	@ResponseBody
 	public ConsumerDTO add(
 			@RequestBody ConsumerDTO res,
 			HttpServletRequest request, HttpServletResponse response) throws NoSuchConsumerException {
 
-		String userId = getUserId(request);
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
 
 		// parse fields from post
 		Map<String, Serializable> propertiesMap = Resource.propertiesFromValue(res.getProperties());
 
-		Registration reg = consumerService.add(userId, res.getType(), res.getConsumer(), propertiesMap);
+		Registration reg = consumerService.add(scopeId, userId, res.getType(), res.getConsumer(), propertiesMap);
 
 		return ConsumerDTO.fromRegistration(reg);
 
 	}
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping({ "/consumers/{id}", "/c/{scope}/consumers/{id}" })
 	@ResponseBody
 	public void delete(
 			@PathVariable("id") long id,
 			HttpServletRequest request, HttpServletResponse response)
 			throws NoSuchConsumerException {
 
-		String userId = getUserId(request);
-		consumerService.delete(userId, id);
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
+
+		consumerService.delete(scopeId, userId, id);
 
 	}
 
@@ -92,16 +98,17 @@ public class ConsumerController {
 	 * List
 	 */
 
-	@GetMapping("/")
+	@GetMapping({ "/consumers", "/c/{scope}/consumers" })
 	@ResponseBody
 	public List<ConsumerDTO> list(
 			HttpServletRequest request, HttpServletResponse response,
 			Pageable pageable) {
 
-		String userId = getUserId(request);
-		System.out.println("userId " + userId);
-		long total = consumerService.count(userId);
-		List<Registration> registrations = consumerService.list(userId, pageable.getPageNumber(),
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
+
+		long total = consumerService.count(scopeId, userId);
+		List<Registration> registrations = consumerService.list(scopeId, userId, pageable.getPageNumber(),
 				pageable.getPageSize());
 		List<ConsumerDTO> results = registrations.stream().map(r -> ConsumerDTO.fromRegistration(r))
 				.collect(Collectors.toList());
@@ -110,8 +117,42 @@ public class ConsumerController {
 
 		return results;
 	}
-	
-	
+
+	/*
+	 * Builders
+	 */
+
+	@GetMapping({ "/builders", "/c/{scope}/builders" })
+	public List<BuilderDTO> listBuilders(
+			@RequestParam("type") Optional<String> type,
+			HttpServletRequest request, HttpServletResponse response,
+			Pageable pageable) {
+
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
+
+		List<BuilderDTO> results = new ArrayList<>();
+		if (type.isPresent()) {
+			List<String> builders = consumerService.listBuilders(scopeId, userId, type.get());
+			for (String b : builders) {
+				results.add(new BuilderDTO(type.get(), b));
+			}
+
+		} else {
+			Map<String, List<String>> map = consumerService.listBuilders(scopeId, userId);
+			for (String t : map.keySet()) {
+				for (String b : map.get(t)) {
+					results.add(new BuilderDTO(t, b));
+				}
+			}
+
+		}
+
+		// add total count as header
+		response.setHeader("X-Total-Count", String.valueOf(results.size()));
+
+		return results;
+	}
 
 	/*
 	 * Exceptions
@@ -127,13 +168,5 @@ public class ConsumerController {
 	/*
 	 * Helper
 	 */
-	private String getUserId(HttpServletRequest request) {
-		Principal principal = request.getUserPrincipal();
-		if (principal != null) {
-			return principal.getName();
-		} else {
-			return "anonymous";
-		}
-	}
 
 }

@@ -25,10 +25,10 @@ public class Registration {
 	private long id;
 
 	private String type;
-
 	private String consumer;
 
 	private String userId;
+	private String scopeId;
 
 	private String properties;
 
@@ -64,6 +64,14 @@ public class Registration {
 		this.userId = userId;
 	}
 
+	public String getScopeId() {
+		return scopeId;
+	}
+
+	public void setScopeId(String scopeId) {
+		this.scopeId = scopeId;
+	}
+
 	public String getProperties() {
 		return properties;
 	}
@@ -74,7 +82,8 @@ public class Registration {
 
 	@Override
 	public String toString() {
-		return "Registration [id=" + id + ", type=" + type + ", consumer=" + consumer + ", userId=" + userId + "]";
+		return "Registration [id=" + id + ", type=" + type + ", consumer=" + consumer + ", userId=" + userId
+				+ ", scopeId=" + scopeId + "]";
 	}
 
 	@Override

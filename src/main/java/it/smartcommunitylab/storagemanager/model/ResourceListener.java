@@ -17,17 +17,20 @@ public class ResourceListener {
 	 */
 	@PostPersist
 	private void postPersist(final Resource entity) {
-		service.notifyAction(entity.getUserId(), entity.getType(), entity.getId(), SystemKeys.ACTION_CREATE);
+		service.notifyAction(entity.getScopeId(), entity.getUserId(), entity.getType(), entity.getId(),
+				SystemKeys.ACTION_CREATE);
 	}
 
 	@PostUpdate
 	private void postUpdate(final Resource entity) {
-		service.notifyAction(entity.getUserId(), entity.getType(), entity.getId(), SystemKeys.ACTION_UPDATE);
+		service.notifyAction(entity.getScopeId(), entity.getUserId(), entity.getType(), entity.getId(),
+				SystemKeys.ACTION_UPDATE);
 	}
 
 	@PreRemove
 	private void preRemove(final Resource entity) {
-		service.notifyAction(entity.getUserId(), entity.getType(), entity.getId(), SystemKeys.ACTION_DELETE);
+		service.notifyAction(entity.getScopeId(), entity.getUserId(), entity.getType(), entity.getId(),
+				SystemKeys.ACTION_DELETE);
 	}
 
 	/*

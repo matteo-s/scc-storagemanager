@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-
 import it.smartcommunitylab.storagemanager.common.NoSuchConsumerException;
 import it.smartcommunitylab.storagemanager.model.Consumer;
 import it.smartcommunitylab.storagemanager.model.ConsumerBuilder;
@@ -19,6 +18,21 @@ public class LogNoSqlBuilder implements ConsumerBuilder {
 	private boolean enabled;
 
 	private static LogNoSqlConsumer _instance;
+
+	@Override
+	public String getType() {
+		return LogNoSqlConsumer.TYPE;
+	}
+
+	@Override
+	public String getId() {
+		return LogNoSqlConsumer.ID;
+	}
+
+	@Override
+	public boolean isAvailable() {
+		return enabled;
+	}
 
 	@Override
 	public Consumer build() throws NoSuchConsumerException {

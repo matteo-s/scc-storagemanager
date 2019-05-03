@@ -31,23 +31,23 @@ public class ConsumerService {
 	 * Data
 	 */
 
-	public Registration add(String userId, String type, String consumer,
+	public Registration add(String scopeId, String userId, String type, String consumer,
 			Map<String, Serializable> properties)
 			throws NoSuchConsumerException {
 		// TODO check auth
 		//
 		// call local service
-		return consumerService.add(userId, type, consumer, properties);
+		return consumerService.add(scopeId, userId, type, consumer, properties);
 	}
 
-	public void delete(String userId, long id) throws NoSuchConsumerException {
+	public void delete(String scopeId, String userId, long id) throws NoSuchConsumerException {
 		// TODO check auth
 		//
 		// call local service
 		consumerService.delete(id);
 	}
 
-	public Registration get(String userId, long id) throws NoSuchConsumerException {
+	public Registration get(String scopeId, String userId, long id) throws NoSuchConsumerException {
 
 		try {
 			// TODO check auth
@@ -60,138 +60,109 @@ public class ConsumerService {
 	}
 
 	/*
+	 * Builders
+	 */
+
+//	public boolean hasBuilder(String id) {
+//		// TODO check auth
+//		//
+//		// call local service
+//		return consumerService.hasBuilder(id);
+//	}
+
+	public Map<String, List<String>> listBuilders(String scopeId, String userId) {
+		// TODO check auth
+		//
+		// call local service
+		return consumerService.listBuilders();
+	}
+
+	public List<String> listBuilders(String scopeId, String userId, String type) {
+		// TODO check auth
+		//
+		// call local service
+		return consumerService.listBuilders(type);
+	}
+
+	/*
 	 * Count
 	 */
 
-	public long count(String userId) {
+	public long count(String scopeId, String userId) {
 		// TODO check auth
 		//
-		// call local service
-		return registrationService.count();
+		// call local service with scope
+		return registrationService.countByScopeId(scopeId);
 	}
 
-	public long countByType(String userId, String type) {
+	public long countByType(String scopeId, String userId, String type) {
 		// TODO check auth
 		//
 		// call local service
-		return registrationService.countByType(type);
+		return registrationService.countByTypeAndScopeId(type, scopeId);
 	}
 
-	public long countByConsumer(String userId, String provider) {
+	public long countByConsumer(String scopeId, String userId, String provider) {
 		// TODO check auth
 		//
 		// call local service
-		return registrationService.countByConsumer(provider);
+		return registrationService.countByConsumerAndScopeId(provider, scopeId);
 	}
 
 	public long countByUserId(String userId, String ownerId) {
 		// TODO check auth
 		//
 		// call local service
-		return registrationService.countByUserId(ownerId);
-	}
-
-	public long countByTypeAndUserId(String userId, String type, String ownerId) {
-		// TODO check auth
-		//
-		// call local service
-		return registrationService.countByTypeAndUserId(type, ownerId);
-	}
-
-	public long countByConsumerAndUserId(String userId, String provider, String ownerId) {
-		// TODO check auth
-		//
-		// call local service
-		return registrationService.countByConsumerAndUserId(provider, ownerId);
+		return registrationService.countByUserId(userId);
 	}
 
 	/*
 	 * List
 	 */
 
-	public List<Registration> list(String userId) {
+	public List<Registration> list(String scopeId, String userId) {
+		// TODO check auth+filter
+		//
+		// call local service with scope
+		return registrationService.listByScopeId(scopeId);
+	}
+
+	public List<Registration> list(String scopeId, String userId, int page, int pageSize) {
 		// TODO check auth+filter
 		//
 		// call local service
-		return registrationService.list();
+		return list(scopeId, userId, page, pageSize, "id", SystemKeys.ORDER_ASC);
 	}
 
-	public List<Registration> list(String userId, int page, int pageSize) {
-		// TODO check auth+filter
-		//
-		// call local service
-		return list(userId, page, pageSize, "id", SystemKeys.ORDER_ASC);
-	}
-
-	public List<Registration> list(String userId, int page, int pageSize, String orderBy, String order) {
+	public List<Registration> list(String scopeId, String userId, int page, int pageSize, String orderBy,
+			String order) {
 		// TODO check auth+filter
 		//
 		Sort sort = (order.equals(SystemKeys.ORDER_ASC) ? Sort.by(orderBy).ascending() : Sort.by(orderBy).descending());
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
 		// call local service
-		return registrationService.list(pageable);
+		return registrationService.listByScopeId(scopeId, pageable);
 	}
 
-	public List<Registration> listByType(String userId, String type) {
+	public List<Registration> listByType(String scopeId, String userId, String type) {
 		// TODO check auth+filter
 		//
 		// call local service
-		return registrationService.listByType(type);
+		return registrationService.listByTypeAndScopeId(type, scopeId);
 	}
 
-	public List<Registration> listByConsumer(String userId, String provider) {
+	public List<Registration> listByConsumer(String scopeId, String userId, String provider) {
 		// TODO check auth+filter
 		//
 		// call local service
-		return registrationService.listByConsumer(provider);
+		return registrationService.listByConsumerAndScopeId(provider, scopeId);
 	}
 
 	public List<Registration> listByUserId(String userId, String ownerId) {
 		// TODO check auth+filter
 		//
 		// call local service
-		return registrationService.listByUserId(ownerId);
+		return registrationService.listByUserId(userId);
 	}
 
-	public List<Registration> listByUserId(String userId, String ownerId, int page, int pageSize) {
-		// TODO check auth+filter
-		//
-		// call local service
-		return listByUserId(userId, ownerId, page, pageSize, "id", SystemKeys.ORDER_ASC);
-	}
-
-	public List<Registration> listByUserId(String userId, String ownerId, int page, int pageSize, String orderBy,
-			String order) {
-		// TODO check auth+filter
-		//
-		Sort sort = (order.equals(SystemKeys.ORDER_ASC) ? Sort.by(orderBy).ascending() : Sort.by(orderBy).descending());
-		Pageable pageable = PageRequest.of(page, pageSize, sort);
-		// call local service
-		return registrationService.listByUserId(ownerId, pageable);
-	}
-
-	public List<Registration> listByTypeAndUserId(String userId, String type, String ownerId) {
-		// TODO check auth+filter
-		//
-		// call local service
-		return registrationService.listByTypeAndUserId(type, ownerId);
-	}
-
-	public List<Registration> listByTypeAndUserId(String userId, String type, String ownerId, int page, int pageSize) {
-		// TODO check auth+filter
-		//
-		// call local service
-		return listByTypeAndUserId(userId, type, ownerId, page, pageSize, "id", SystemKeys.ORDER_ASC);
-	}
-
-	public List<Registration> listByTypeAndUserId(String userId, String type, String ownerId, int page, int pageSize,
-			String orderBy,
-			String order) {
-		// TODO check auth+filter
-		//
-		Sort sort = (order.equals(SystemKeys.ORDER_ASC) ? Sort.by(orderBy).ascending() : Sort.by(orderBy).descending());
-		Pageable pageable = PageRequest.of(page, pageSize, sort);
-		// call local service
-		return registrationService.listByTypeAndUserId(type, ownerId, pageable);
-	}
 }

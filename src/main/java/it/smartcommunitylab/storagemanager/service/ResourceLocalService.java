@@ -34,7 +34,8 @@ public class ResourceLocalService {
 	/*
 	 * Data
 	 */
-	public Resource create(String userId, String type, String providerId, Map<String, Serializable> properties)
+	public Resource create(String scopeId, String userId, String type, String providerId,
+			Map<String, Serializable> properties)
 			throws NoSuchProviderException {
 		_log.info("create " + type + " resource with " + String.valueOf(providerId) + " by user " + userId);
 
@@ -45,9 +46,10 @@ public class ResourceLocalService {
 			throw new NoSuchProviderException();
 		}
 		// sync call - should validate properties
-		Resource res = provider.createResource(userId, properties);
+		Resource res = provider.createResource(scopeId, userId, properties);
 
 		// update fields
+		res.setScopeId(scopeId);
 		res.setUserId(userId);
 
 		// persist resource
@@ -123,16 +125,20 @@ public class ResourceLocalService {
 		return resourceRepository.countByProvider(provider);
 	}
 
+	public long countByScopeId(String scopeId) {
+		return resourceRepository.countByScopeId(scopeId);
+	}
+
 	public long countByUserId(String userId) {
 		return resourceRepository.countByUserId(userId);
 	}
 
-	public long countByTypeAndUserId(String type, String userId) {
-		return resourceRepository.countByTypeAndUserId(type, userId);
+	public long countByTypeAndScopeId(String type, String scopeId) {
+		return resourceRepository.countByTypeAndScopeId(type, scopeId);
 	}
 
-	public long countByProviderAndUserId(String provider, String userId) {
-		return resourceRepository.countByProviderAndUserId(provider, userId);
+	public long countByProviderAndScopeId(String provider, String scopeId) {
+		return resourceRepository.countByProviderAndScopeId(provider, scopeId);
 	}
 	/*
 	 * List
@@ -159,18 +165,26 @@ public class ResourceLocalService {
 		return resourceRepository.findByUserId(userId);
 	}
 
-	public List<Resource> listByUserId(String userId, Pageable pageable) {
-		Page<Resource> result = resourceRepository.findByUserId(userId, pageable);
+	public List<Resource> listByScopeId(String scopeId) {
+		return resourceRepository.findByScopeId(scopeId);
+	}
+
+	public List<Resource> listByScopeId(String scopeId, Pageable pageable) {
+		Page<Resource> result = resourceRepository.findByScopeId(scopeId, pageable);
 		return result.getContent();
 	}
 
-	public List<Resource> listByTypeAndUserId(String type, String userId) {
-		return resourceRepository.findByTypeAndUserId(type, userId);
+	public List<Resource> listByTypeAndScopeId(String type, String scopeId) {
+		return resourceRepository.findByTypeAndScopeId(type, scopeId);
 	}
 
-	public List<Resource> listByTypeAndUserId(String type, String userId, Pageable pageable) {
-		Page<Resource> result = resourceRepository.findByTypeAndUserId(type, userId, pageable);
+	public List<Resource> listByTypeAndScopeId(String type, String scopeId, Pageable pageable) {
+		Page<Resource> result = resourceRepository.findByTypeAndScopeId(type, scopeId, pageable);
 		return result.getContent();
+	}
+
+	public List<Resource> listByProviderAndScopeId(String provider, String scopeId) {
+		return resourceRepository.findByProviderAndScopeId(provider, scopeId);
 	}
 
 	/*
@@ -194,7 +208,8 @@ public class ResourceLocalService {
 		provider.checkResource(res);
 
 		// notify all consumers via events
-		ResourceEvent event = new ResourceEvent(this, res.getUserId(), res.getType(), id, SystemKeys.ACTION_CHECK);
+		ResourceEvent event = new ResourceEvent(this, res.getScopeId(), res.getUserId(), res.getType(), id,
+				SystemKeys.ACTION_CHECK);
 		applicationEventPublisher.publishEvent(event);
 	}
 

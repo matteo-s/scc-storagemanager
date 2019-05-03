@@ -7,6 +7,12 @@ import it.smartcommunitylab.storagemanager.common.NoSuchConsumerException;
 
 public interface ConsumerBuilder {
 
+	public String getId();
+
+	public String getType();
+
+	public boolean isAvailable();
+
 	public Consumer build() throws NoSuchConsumerException;
 
 	public Consumer build(Map<String, Serializable> properties) throws NoSuchConsumerException;

@@ -1,5 +1,7 @@
 package it.smartcommunitylab.storagemanager.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import it.smartcommunitylab.storagemanager.SystemKeys;
 import it.smartcommunitylab.storagemanager.common.NoSuchProviderException;
 import it.smartcommunitylab.storagemanager.model.Provider;
 
@@ -20,14 +23,31 @@ public class ProviderLocalService {
 	@Autowired
 	private Map<String, Provider> _providers;
 
-	public Map<String, Provider> getProviders() {
+	public Map<String, Provider> availableProviders() {
 		// return only active providers
 		return _providers.entrySet().stream()
 				.filter(entry -> (entry.getValue().getStatus() > -1))
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 	}
 
-	public List<Provider> getProviders(String type) {
+	public Map<String, List<Provider>> listProviders() {
+		Map<String, List<Provider>> map = new HashMap<>();
+
+		// static init for all types
+		map.put(SystemKeys.TYPE_SQL, new ArrayList<>());
+		map.put(SystemKeys.TYPE_NOSQL, new ArrayList<>());
+		map.put(SystemKeys.TYPE_FILE, new ArrayList<>());
+		map.put(SystemKeys.TYPE_OBJECT, new ArrayList<>());
+
+		for (Provider p : _providers.values()) {
+			if (p.getStatus() > -1) {
+				map.get(p.getType()).add(p);
+			}
+		}
+		return map;
+	}
+
+	public List<Provider> listProviders(String type) {
 		// return only active providers
 		return _providers.entrySet().stream()
 				.map(entry -> entry.getValue())

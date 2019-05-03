@@ -136,27 +136,49 @@ public class ConsumerLocalService {
 		return _builders.get(builderClass).build(reg);
 	}
 
-	private boolean hasConsumer(String id) {
+	public boolean hasBuilder(String id) {
 		// lookup builder
 		String builderClass = id.replace("Consumer", "Builder");
 
 		return _builders.containsKey(builderClass);
 	}
 
+	public Map<String, List<String>> listBuilders() {
+		Map<String, List<String>> map = new HashMap<>();
+		// static init for all types
+		map.put(SystemKeys.TYPE_SQL, new ArrayList<>());
+		map.put(SystemKeys.TYPE_NOSQL, new ArrayList<>());
+		map.put(SystemKeys.TYPE_FILE, new ArrayList<>());
+		map.put(SystemKeys.TYPE_OBJECT, new ArrayList<>());
+
+		for (ConsumerBuilder b : _builders.values()) {
+			if (b.isAvailable()) {
+				map.get(b.getType()).add(b.getId());
+			}
+		}
+
+		return map;
+	}
+
+	public List<String> listBuilders(String type) {
+		return listBuilders().get(type);
+	}
+
 	/*
 	 * Data
 	 */
 
-	public Registration add(String userId, String type, String consumer, Map<String, Serializable> properties)
+	public Registration add(String scopeId, String userId, String type, String consumer,
+			Map<String, Serializable> properties)
 			throws NoSuchConsumerException {
 
 		// check support
-		if (!hasConsumer(consumer)) {
+		if (!hasBuilder(consumer)) {
 			throw new NoSuchConsumerException();
 		}
 
 		// build registration
-		Registration reg = registrationService.add(userId, type, consumer, properties);
+		Registration reg = registrationService.add(scopeId, userId, type, consumer, properties);
 
 		// build consumer
 		Consumer c = buildConsumer(reg);
@@ -206,6 +228,7 @@ public class ConsumerLocalService {
 			Resource res = resourceLocalService.get(event.getId());
 			String type = event.getType();
 			String action = event.getAction();
+			String scopeId = event.getScopeId();
 			String userId = event.getUserId();
 
 			// notify all active consumers
@@ -217,16 +240,16 @@ public class ConsumerLocalService {
 
 					switch (action) {
 					case SystemKeys.ACTION_CREATE:
-						c.addResource(userId, res);
+						c.addResource(scopeId, userId, res);
 						break;
 					case SystemKeys.ACTION_UPDATE:
-						c.updateResource(userId, res);
+						c.updateResource(scopeId, userId, res);
 						break;
 					case SystemKeys.ACTION_DELETE:
-						c.deleteResource(userId, res);
+						c.deleteResource(scopeId, userId, res);
 						break;
 					case SystemKeys.ACTION_CHECK:
-						c.checkResource(userId, res);
+						c.checkResource(scopeId, userId, res);
 						break;
 					}
 

@@ -15,11 +15,13 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
 
 	Long countByProvider(String provider);
 
+	Long countByScopeId(String scopeId);
+
 	Long countByUserId(String userId);
 
-	Long countByTypeAndUserId(String type, String userId);
+	Long countByTypeAndScopeId(String type, String scopeId);
 
-	Long countByProviderAndUserId(String provider, String userId);
+	Long countByProviderAndScopeId(String provider, String scopeId);
 
 	List<Resource> findByType(String type);
 
@@ -33,21 +35,27 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
 
 	Page<Resource> findByUserId(String userId, Pageable pageable);
 
+	List<Resource> findByScopeId(String scopeId);
+
+	List<Resource> findByScopeId(String scopeId, Sort sort);
+
+	Page<Resource> findByScopeId(String scopeId, Pageable pageable);
+
 	List<Resource> findByProvider(String provider);
 
 	List<Resource> findByProvider(String provider, Sort sort);
 
 	Page<Resource> findByProvider(String provider, Pageable pageable);
 
-	List<Resource> findByTypeAndUserId(String type, String userId);
+	List<Resource> findByTypeAndScopeId(String type, String scopeId);
 
-	List<Resource> findByTypeAndUserId(String type, String userId, Sort sort);
+	List<Resource> findByTypeAndScopeId(String type, String scopeId, Sort sort);
 
-	Page<Resource> findByTypeAndUserId(String type, String userId, Pageable pageable);
+	Page<Resource> findByTypeAndScopeId(String type, String scopeId, Pageable pageable);
 
-	List<Resource> findByProviderAndUserId(String provider, String userId);
+	List<Resource> findByProviderAndScopeId(String provider, String scopeId);
 
-	List<Resource> findByProviderAndUserId(String provider, String userId, Sort sort);
+	List<Resource> findByProviderAndScopeId(String provider, String scopeId, Sort sort);
 
-	Page<Resource> findByProviderAndUserId(String provider, String userId, Pageable pageable);
+	Page<Resource> findByProviderAndScopeId(String provider, String scopeId, Pageable pageable);
 }

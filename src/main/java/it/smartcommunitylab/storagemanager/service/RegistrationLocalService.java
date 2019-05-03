@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,7 @@ import it.smartcommunitylab.storagemanager.repository.RegistrationRepository;
 
 @Component
 public class RegistrationLocalService {
+	private final static Logger _log = LoggerFactory.getLogger(RegistrationLocalService.class);
 
 	@Autowired
 	private RegistrationRepository registrationRepository;
@@ -25,7 +28,8 @@ public class RegistrationLocalService {
 	 * Data
 	 */
 
-	public Registration add(String userId, String type, String consumer, Map<String, Serializable> properties)
+	public Registration add(String scopeId, String userId, String type, String consumer,
+			Map<String, Serializable> properties)
 			throws NoSuchConsumerException {
 
 		// build registration
@@ -75,12 +79,16 @@ public class RegistrationLocalService {
 		return registrationRepository.countByUserId(userId);
 	}
 
-	public long countByTypeAndUserId(String type, String userId) {
-		return registrationRepository.countByTypeAndUserId(type, userId);
+	public long countByScopeId(String scopeId) {
+		return registrationRepository.countByScopeId(scopeId);
 	}
 
-	public long countByConsumerAndUserId(String provider, String userId) {
-		return registrationRepository.countByConsumerAndUserId(provider, userId);
+	public long countByTypeAndScopeId(String type, String scopeId) {
+		return registrationRepository.countByTypeAndScopeId(type, scopeId);
+	}
+
+	public long countByConsumerAndScopeId(String provider, String scopeId) {
+		return registrationRepository.countByConsumerAndScopeId(provider, scopeId);
 	}
 	/*
 	 * List
@@ -107,18 +115,21 @@ public class RegistrationLocalService {
 		return registrationRepository.findByUserId(userId);
 	}
 
-	public List<Registration> listByUserId(String userId, Pageable pageable) {
-		Page<Registration> result = registrationRepository.findByUserId(userId, pageable);
+	public List<Registration> listByScopeId(String scopeId) {
+		return registrationRepository.findByScopeId(scopeId);
+	}
+
+	public List<Registration> listByScopeId(String scopeId, Pageable pageable) {
+		Page<Registration> result = registrationRepository.findByScopeId(scopeId, pageable);
 		return result.getContent();
 	}
 
-	public List<Registration> listByTypeAndUserId(String type, String userId) {
-		return registrationRepository.findByTypeAndUserId(type, userId);
+	public List<Registration> listByTypeAndScopeId(String type, String scopeId) {
+		return registrationRepository.findByTypeAndScopeId(type, scopeId);
 	}
 
-	public List<Registration> listByTypeAndUserId(String type, String userId, Pageable pageable) {
-		Page<Registration> result = registrationRepository.findByTypeAndUserId(type, userId, pageable);
-		return result.getContent();
+	public List<Registration> listByConsumerAndScopeId(String consumer, String scopeId) {
+		return registrationRepository.findByConsumerAndScopeId(consumer, scopeId);
 	}
 
 }

@@ -2,6 +2,7 @@ package it.smartcommunitylab.storagemanager.model;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class Provider {
 
@@ -17,7 +18,7 @@ public abstract class Provider {
 	/*
 	 * Resources
 	 */
-	public abstract Resource createResource(String userId, Map<String, Serializable> properties);
+	public abstract Resource createResource(String scopeId, String userId, Map<String, Serializable> properties);
 
 	public abstract void updateResource(Resource resource);
 
@@ -25,9 +26,9 @@ public abstract class Provider {
 
 	public abstract void checkResource(Resource resource);
 
-//	/*
-//	 * Properties
-//	 */
-//	public abstract Set<String> listProperties();
+	/*
+	 * Properties
+	 */
+	public abstract Set<String> listProperties();
 
 }

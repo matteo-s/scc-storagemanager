@@ -17,9 +17,11 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
 
 	Long countByUserId(String userId);
 
-	Long countByTypeAndUserId(String type, String userId);
+	Long countByScopeId(String scopeId);
 
-	Long countByConsumerAndUserId(String consumer, String userId);
+	Long countByTypeAndScopeId(String type, String scopeId);
+
+	Long countByConsumerAndScopeId(String consumer, String scopeId);
 
 	List<Registration> findByType(String type);
 
@@ -33,21 +35,27 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
 
 	Page<Registration> findByUserId(String userId, Pageable pageable);
 
+	List<Registration> findByScopeId(String scopeId);
+
+	List<Registration> findByScopeId(String scopeId, Sort sort);
+
+	Page<Registration> findByScopeId(String scopeId, Pageable pageable);
+
 	List<Registration> findByConsumer(String consumer);
 
 	List<Registration> findByConsumer(String consumer, Sort sort);
 
 	Page<Registration> findByConsumer(String consumer, Pageable pageable);
 
-	List<Registration> findByTypeAndUserId(String type, String userId);
+	List<Registration> findByTypeAndScopeId(String type, String scopeId);
 
-	List<Registration> findByTypeAndUserId(String type, String userId, Sort sort);
+	List<Registration> findByTypeAndScopeId(String type, String scopeId, Sort sort);
 
-	Page<Registration> findByTypeAndUserId(String type, String userId, Pageable pageable);
+	Page<Registration> findByTypeAndScopeId(String type, String scopeId, Pageable pageable);
 
-	List<Registration> findByConsumerAndUserId(String consumer, String userId);
+	List<Registration> findByConsumerAndScopeId(String consumer, String scopeId);
 
-	List<Registration> findByConsumerAndUserId(String consumer, String userId, Sort sort);
+	List<Registration> findByConsumerAndScopeId(String consumer, String scopeId, Sort sort);
 
-	Page<Registration> findByConsumerAndUserId(String consumer, String userId, Pageable pageable);
+	Page<Registration> findByConsumerAndScopeId(String consumer, String scopeId, Pageable pageable);
 }

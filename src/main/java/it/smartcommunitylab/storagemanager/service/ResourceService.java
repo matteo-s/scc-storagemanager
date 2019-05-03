@@ -28,18 +28,19 @@ public class ResourceService {
 	/*
 	 * Data
 	 */
-	public Resource create(String userId, String type, String providerId, Map<String, Serializable> properties)
+	public Resource create(String scopeId, String userId, String type, String providerId,
+			Map<String, Serializable> properties)
 			throws NoSuchProviderException {
 		_log.info("create resource with " + String.valueOf(providerId) + " by user " + userId);
 
 		// TODO check auth
 		//
 		// call local service
-		return resourceLocalService.create(userId, type, providerId, properties);
+		return resourceLocalService.create(scopeId, userId, type, providerId, properties);
 
 	}
 
-	public Resource update(String userId, long id, Map<String, Serializable> properties)
+	public Resource update(String scopeId, String userId, long id, Map<String, Serializable> properties)
 			throws NoSuchResourceException, NoSuchProviderException {
 		_log.info("update resource " + String.valueOf(id) + " by user " + userId);
 
@@ -50,7 +51,7 @@ public class ResourceService {
 
 	}
 
-	public void delete(String userId, long id) throws NoSuchResourceException, NoSuchProviderException {
+	public void delete(String scopeId, String userId, long id) throws NoSuchResourceException, NoSuchProviderException {
 		_log.info("delete resource " + String.valueOf(id) + " by user " + userId);
 
 		// TODO check auth
@@ -59,7 +60,7 @@ public class ResourceService {
 		resourceLocalService.delete(id);
 	}
 
-	public Resource get(String userId, long id) throws NoSuchResourceException {
+	public Resource get(String scopeId, String userId, long id) throws NoSuchResourceException {
 		_log.info("get resource " + String.valueOf(id) + " by user " + userId);
 
 		// TODO check auth
@@ -72,87 +73,73 @@ public class ResourceService {
 	 * Count
 	 */
 
-	public long count(String userId) {
+	public long count(String scopeId, String userId) {
 		// TODO check auth
 		//
-		// call local service
-		return resourceLocalService.count();
+		// call local service with scope
+		return resourceLocalService.countByScopeId(scopeId);
 	}
 
-	public long countByType(String userId, String type) {
+	public long countByType(String scopeId, String userId, String type) {
 		// TODO check auth
 		//
 		// call local service
-		return resourceLocalService.countByType(type);
+		return resourceLocalService.countByTypeAndScopeId(type, scopeId);
 	}
 
-	public long countByProvider(String userId, String provider) {
+	public long countByProvider(String scopeId, String userId, String provider) {
 		// TODO check auth
 		//
 		// call local service
-		return resourceLocalService.countByProvider(provider);
+		return resourceLocalService.countByProviderAndScopeId(provider, scopeId);
 	}
 
 	public long countByUserId(String userId, String ownerId) {
 		// TODO check auth
 		//
 		// call local service
-		return resourceLocalService.countByUserId(ownerId);
-	}
-
-	public long countByTypeAndUserId(String userId, String type, String ownerId) {
-		// TODO check auth
-		//
-		// call local service
-		return resourceLocalService.countByTypeAndUserId(type, ownerId);
-	}
-
-	public long countByProviderAndUserId(String userId, String provider, String ownerId) {
-		// TODO check auth
-		//
-		// call local service
-		return resourceLocalService.countByProviderAndUserId(provider, ownerId);
+		return resourceLocalService.countByUserId(userId);
 	}
 
 	/*
 	 * List
 	 */
 
-	public List<Resource> list(String userId) {
+	public List<Resource> list(String scopeId, String userId) {
+		// TODO check auth+filter
+		//
+		// call local service with scope
+		return resourceLocalService.listByScopeId(scopeId);
+	}
+
+	public List<Resource> list(String scopeId, String userId, int page, int pageSize) {
 		// TODO check auth+filter
 		//
 		// call local service
-		return resourceLocalService.list();
+		return list(scopeId, userId, page, pageSize, "id", SystemKeys.ORDER_ASC);
 	}
 
-	public List<Resource> list(String userId, int page, int pageSize) {
-		// TODO check auth+filter
-		//
-		// call local service
-		return list(userId, page, pageSize, "id", SystemKeys.ORDER_ASC);
-	}
-
-	public List<Resource> list(String userId, int page, int pageSize, String orderBy, String order) {
+	public List<Resource> list(String scopeId, String userId, int page, int pageSize, String orderBy, String order) {
 		// TODO check auth+filter
 		//
 		Sort sort = (order.equals(SystemKeys.ORDER_ASC) ? Sort.by(orderBy).ascending() : Sort.by(orderBy).descending());
 		Pageable pageable = PageRequest.of(page, pageSize, sort);
 		// call local service
-		return resourceLocalService.list(pageable);
+		return resourceLocalService.listByScopeId(scopeId, pageable);
 	}
 
-	public List<Resource> listByType(String userId, String type) {
+	public List<Resource> listByType(String scopeId, String userId, String type) {
 		// TODO check auth+filter
 		//
 		// call local service
-		return resourceLocalService.listByType(type);
+		return resourceLocalService.listByTypeAndScopeId(type, scopeId);
 	}
 
-	public List<Resource> listByProvider(String userId, String provider) {
+	public List<Resource> listByProvider(String scopeId, String userId, String provider) {
 		// TODO check auth+filter
 		//
 		// call local service
-		return resourceLocalService.listByProvider(provider);
+		return resourceLocalService.listByProviderAndScopeId(provider, scopeId);
 	}
 
 	public List<Resource> listByUserId(String userId, String ownerId) {
@@ -162,53 +149,13 @@ public class ResourceService {
 		return resourceLocalService.listByUserId(ownerId);
 	}
 
-	public List<Resource> listByUserId(String userId, String ownerId, int page, int pageSize) {
-		// TODO check auth+filter
-		//
-		// call local service
-		return listByUserId(userId, ownerId, page, pageSize, "id", SystemKeys.ORDER_ASC);
-	}
-
-	public List<Resource> listByUserId(String userId, String ownerId, int page, int pageSize, String orderBy,
-			String order) {
-		// TODO check auth+filter
-		//
-		Sort sort = (order.equals(SystemKeys.ORDER_ASC) ? Sort.by(orderBy).ascending() : Sort.by(orderBy).descending());
-		Pageable pageable = PageRequest.of(page, pageSize, sort);
-		// call local service
-		return resourceLocalService.listByUserId(ownerId, pageable);
-	}
-
-	public List<Resource> listByTypeAndUserId(String userId, String type, String ownerId) {
-		// TODO check auth+filter
-		//
-		// call local service
-		return resourceLocalService.listByTypeAndUserId(type, ownerId);
-	}
-
-	public List<Resource> listByTypeAndUserId(String userId, String type, String ownerId, int page, int pageSize) {
-		// TODO check auth+filter
-		//
-		// call local service
-		return listByTypeAndUserId(userId, type, ownerId, page, pageSize, "id", SystemKeys.ORDER_ASC);
-	}
-
-	public List<Resource> listByTypeAndUserId(String userId, String type, String ownerId, int page, int pageSize,
-			String orderBy,
-			String order) {
-		// TODO check auth+filter
-		//
-		Sort sort = (order.equals(SystemKeys.ORDER_ASC) ? Sort.by(orderBy).ascending() : Sort.by(orderBy).descending());
-		Pageable pageable = PageRequest.of(page, pageSize, sort);
-		// call local service
-		return resourceLocalService.listByTypeAndUserId(type, ownerId, pageable);
-	}
-
 	/*
 	 * Check
 	 */
 
-	public void check(String userId, long id) throws NoSuchResourceException, NoSuchProviderException {
+	public void check(String scopeId, String userId, long id) throws NoSuchResourceException, NoSuchProviderException {
+		_log.info("check resource " + String.valueOf(id) + " by user " + userId);
+
 		// TODO check auth
 		//
 		// call local service

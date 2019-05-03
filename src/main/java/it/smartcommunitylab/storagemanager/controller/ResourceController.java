@@ -23,20 +23,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
 import it.smartcommunitylab.storagemanager.common.NoSuchProviderException;
 import it.smartcommunitylab.storagemanager.common.NoSuchResourceException;
 import it.smartcommunitylab.storagemanager.dto.ResourceDTO;
 import it.smartcommunitylab.storagemanager.model.Resource;
 import it.smartcommunitylab.storagemanager.service.ResourceService;
+import it.smartcommunitylab.storagemanager.util.ControllerUtil;
 
 @RestController
-@RequestMapping("/resources")
 public class ResourceController {
 
 	private final static Logger _log = LoggerFactory.getLogger(ResourceController.class);
@@ -47,40 +45,42 @@ public class ResourceController {
 	/*
 	 * Resource
 	 */
-	@GetMapping("/{id}")
+	@GetMapping({ "/resources/{id}", "/c/{scope}/resources/{id}" })
 	@ResponseBody
 	public ResourceDTO get(
 			@PathVariable("id") long id,
 			HttpServletRequest request, HttpServletResponse response)
 			throws NoSuchResourceException {
 
-		String userId = getUserId(request);
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
 
 		_log.debug("get " + String.valueOf("id") + " by " + userId);
 
-		Resource resource = resourceService.get(userId, id);
+		Resource resource = resourceService.get(scopeId, userId, id);
 
 		return ResourceDTO.fromResource(resource);
 	}
 
-	@PostMapping("/")
+	@PostMapping({ "/resources", "/c/{scope}/resources" })
 	@ResponseBody
 	public ResourceDTO add(
 			@RequestBody ResourceDTO res,
 			HttpServletRequest request, HttpServletResponse response) throws NoSuchProviderException {
 
-		String userId = getUserId(request);
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
 
 		// parse fields from post
 		Map<String, Serializable> propertiesMap = Resource.propertiesFromValue(res.getProperties());
 
-		Resource resource = resourceService.create(userId, res.getType(), res.getProvider(), propertiesMap);
+		Resource resource = resourceService.create(scopeId, userId, res.getType(), res.getProvider(), propertiesMap);
 
 		return ResourceDTO.fromResource(resource);
 
 	}
 
-	@PutMapping("/{id}")
+	@PutMapping({ "/resources/{id}", "/c/{scope}/resources/{id}" })
 	@ResponseBody
 	public ResourceDTO update(
 			@PathVariable("id") long id,
@@ -88,27 +88,30 @@ public class ResourceController {
 			HttpServletRequest request, HttpServletResponse response)
 			throws NoSuchProviderException, NoSuchResourceException {
 
-		String userId = getUserId(request);
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
 
 		// parse fields from post
 		Map<String, Serializable> propertiesMap = Resource.propertiesFromValue(res.getProperties());
 		res.id = id;
 
-		Resource resource = resourceService.update(userId, id, propertiesMap);
+		Resource resource = resourceService.update(scopeId, userId, id, propertiesMap);
 
 		return ResourceDTO.fromResource(resource);
 
 	}
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping({ "/resources/{id}", "/c/{scope}/resources/{id}" })
 	@ResponseBody
 	public void delete(
 			@PathVariable("id") long id,
 			HttpServletRequest request, HttpServletResponse response)
 			throws NoSuchProviderException, NoSuchResourceException {
 
-		String userId = getUserId(request);
-		resourceService.delete(userId, id);
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
+
+		resourceService.delete(scopeId, userId, id);
 
 	}
 
@@ -116,37 +119,34 @@ public class ResourceController {
 	 * List
 	 */
 
-	@GetMapping("/")
+	@GetMapping({ "/resources", "/c/{scope}/resources" })
 	@ResponseBody
 	public List<ResourceDTO> list(
 			@RequestParam("type") Optional<String> type,
 			@RequestParam("provider") Optional<String> provider,
-			@RequestParam("userId") Optional<String> ownerId,
+			@RequestParam("user") Optional<String> ownerId,
 			HttpServletRequest request, HttpServletResponse response,
 			Pageable pageable) {
 
-		String userId = getUserId(request);
+		String scopeId = ControllerUtil.getScopeId(request);
+		String userId = ControllerUtil.getUserId(request);
+
 		long total = 0;
-		List<Resource> resources = new ArrayList();
+		List<Resource> resources = new ArrayList<>();
 
 		// TODO refactor - ugly
 		if (type.isPresent()) {
-			if (ownerId.isPresent()) {
-				total = resourceService.countByTypeAndUserId(userId, type.get(), ownerId.get());
-				resources = resourceService.listByTypeAndUserId(userId, type.get(), ownerId.get());
-			} else {
-				total = resourceService.countByType(userId, type.get());
-				resources = resourceService.listByType(userId, type.get());
-			}
+			total = resourceService.countByType(scopeId, userId, type.get());
+			resources = resourceService.listByType(scopeId, userId, type.get());
 		} else if (provider.isPresent()) {
-			total = resourceService.countByProvider(userId, provider.get());
-			resources = resourceService.listByProvider(userId, provider.get());
+			total = resourceService.countByProvider(scopeId, userId, provider.get());
+			resources = resourceService.listByProvider(scopeId, userId, provider.get());
 		} else if (ownerId.isPresent()) {
 			total = resourceService.countByUserId(userId, ownerId.get());
 			resources = resourceService.listByUserId(userId, ownerId.get());
 		} else {
-			total = resourceService.count(userId);
-			resources = resourceService.list(userId, pageable.getPageNumber(), pageable.getPageSize());
+			total = resourceService.count(scopeId, userId);
+			resources = resourceService.list(scopeId, userId, pageable.getPageNumber(), pageable.getPageSize());
 		}
 		List<ResourceDTO> results = resources.stream().map(r -> ResourceDTO.fromResource(r))
 				.collect(Collectors.toList());
@@ -177,14 +177,7 @@ public class ResourceController {
 	/*
 	 * Helper
 	 */
-	private String getUserId(HttpServletRequest request) {
-		Principal principal = request.getUserPrincipal();
-		if (principal != null) {
-			return principal.getName();
-		} else {
-			return "anonymous";
-		}
-	}
+
 //	private String getUserId() {
 //		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //		if (!(authentication instanceof AnonymousAuthenticationToken)) {

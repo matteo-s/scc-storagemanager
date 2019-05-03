@@ -32,7 +32,7 @@ public class StorageManagerApplication {
 //			service.getProviders().forEach((key, p) -> System.out.println((key + ":" + p.getId())));
 //
 			// test
-			Resource res = resourceService.create("mat", SystemKeys.TYPE_SQL, "nullProvider", null);
+			Resource res = resourceService.create("default", "mat", SystemKeys.TYPE_SQL, "nullProvider", null);
 			System.out.println("resource " + res.getId() + " uri " + res.getUri());
 //
 //			// parse
